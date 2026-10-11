@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0E3A2D">
+<script>try{var tv=JSON.parse(localStorage.getItem('ff_theme_vars')||'null');if(tv){var r0=document.documentElement;for(var k0 in tv){r0.style.setProperty(k0,tv[k0])}r0.style.colorScheme=tv['--scheme']||'dark';var m0=document.querySelector('meta[name=theme-color]');if(m0)m0.setAttribute('content',tv['--bg'])}}catch(e){}</script>
 <title>FUSS &amp; FUN</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8B84A'/%3E%3Ctext x='32' y='46' font-size='40' font-family='Arial,sans-serif' font-weight='700' text-anchor='middle' fill='%231A1300'%3EF%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,6 +69,30 @@ h2{font-size:20px;margin:12px 0 10px;font-weight:600}
 .addf input::placeholder{color:var(--muted);letter-spacing:0;text-transform:none}
 .addf .btn{width:auto;padding:0 20px}
 .btn.sm{width:auto;padding:8px 14px;flex:none}
+.sico{width:40px;height:40px;border-radius:12px;background:var(--deep);display:grid;place-items:center;flex:none}
+.row .t span.w{white-space:normal}
+.tg{position:relative;width:52px;height:30px;border-radius:99px;background:var(--deep);border:2px solid var(--line);flex:none}
+.tg::after{content:'';position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:var(--muted);transition:transform .15s}
+.tg[aria-checked=true]{background:var(--brass);border-color:var(--brass)}
+.tg[aria-checked=true]::after{transform:translateX(22px);background:var(--brass-ink)}
+.grp{display:flex;flex-direction:column;gap:8px}
+.grp>b{font-weight:600}
+.fld{width:100%;border:2px solid var(--line);background:var(--deep);color:var(--ink);border-radius:12px;padding:12px;font:inherit}
+.fld::placeholder{color:var(--muted)}
+.sw{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.swb{width:38px;height:38px;border-radius:50%;border:3px solid transparent}
+.swb.on{border-color:var(--ink)}
+input[type=color]{width:46px;height:38px;border:2px solid var(--line);border-radius:10px;background:none;padding:2px;flex:none}
+.ics{display:flex;flex-wrap:wrap;gap:8px}
+.icb{width:46px;height:46px;border-radius:12px;border:2px solid var(--line);display:grid;place-items:center;font-weight:600}
+.icb.on{background:var(--brass);color:var(--brass-ink);border-color:var(--brass)}
+.pre{display:flex;flex-wrap:wrap;gap:10px}
+.pre button{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;border:2px solid var(--line);border-radius:14px;min-width:84px;font-size:13px}
+.pre button.on{border-color:var(--brass)}
+.pre i{display:block;width:44px;height:44px;border-radius:50%;overflow:hidden;position:relative;border:2px solid var(--line)}
+.pre i u{position:absolute;right:0;top:0;bottom:0;width:50%}
+.hint{color:var(--muted);font-size:13px;line-height:1.45;margin:0}
+.calm *,.calm *::before,.calm *::after{animation:none!important;transition:none!important}
 .note{border:2px dashed var(--line);border-radius:16px;padding:14px;color:var(--muted);font-size:14px;margin-top:16px;line-height:1.45}
 .note.solid{border-style:solid;color:var(--ink);background:var(--deep)}
 nav{display:flex;padding:8px 12px 10px;gap:8px;background:var(--deep);border-top:2px solid var(--line)}
@@ -143,7 +169,7 @@ nav button.on{background:var(--brass);color:var(--brass-ink)}
 .lcomp input{flex:1;min-width:0;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;padding:8px 12px;font:inherit;font-size:14px}
 .lcomp input::placeholder{color:var(--muted)}
 .lcomp .ib{width:40px;height:40px;border-radius:10px;background:var(--brass);border-color:var(--brass);color:var(--brass-ink)}
-.die{width:68px;height:68px;border-radius:16px;background:var(--ink);display:grid;place-items:center;flex:none}
+.die{width:68px;height:68px;border-radius:16px;background:#F3EEDC;display:grid;place-items:center;flex:none}
 .die.roll{animation:shake .55s}
 @keyframes shake{20%{transform:rotate(-18deg) scale(1.1)}50%{transform:rotate(16deg) scale(1.1)}80%{transform:rotate(-8deg)}}
 .pips{display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);width:44px;height:44px;gap:3px}
@@ -203,11 +229,17 @@ nav button.on{background:var(--brass);color:var(--brass-ink)}
   <div class="compose"><input id="gcIn" placeholder="Say something" autocomplete="off"><button class="ib send" id="gcSend" aria-label="Send" data-ico="send"></button></div>
 </div>
 
+<div class="overlay" id="settings" style="z-index:22">
+  <div class="bar"><button class="ib" id="stBack" aria-label="Back" data-ico="back"></button><b id="stTitle" style="flex:1">Settings</b></div>
+  <div class="msgs" id="stBody" style="gap:12px"></div>
+</div>
+
 <div id="sheetBg"><div id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <input type="file" id="logoFile" accept="image/*" hidden>
 <input type="file" id="photoFile" accept="image/*" hidden>
 <input type="file" id="anyFile" hidden>
+<input type="file" id="avFile" accept="image/*" hidden>
 
 <script>
 const $=s=>document.querySelector(s);
@@ -235,6 +267,13 @@ const IC={
  set:'<path d="M12 4l8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 16l8 4 8-4"/>',
  trophy:'<path d="M8 4h8v5a4 4 0 01-8 0zM8 6H5v1.5A3 3 0 008 10.5M16 6h3v1.5A3 3 0 0116 10.5M12 13v4M8.5 20h7M10 17h4"/>'
 };
+Object.assign(IC,{
+ gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',
+ palette:'<path d="M12 3a9 9 0 100 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.1 0-.9.7-1.6 1.6-1.6H17a4 4 0 004-4c0-4.4-4-8.4-9-8.4z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="14.5" cy="7" r="1"/>',
+ volume:'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 9a4 4 0 010 6M18.5 6.5a7.5 7.5 0 010 11"/>',
+ shield:'<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/>',
+ chev:'<path d="M9 5l7 7-7 7"/>'
+});
 const ico=(n,s=22,w=2)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
 document.querySelectorAll('[data-ico]').forEach(e=>e.innerHTML=ico(e.dataset.ico,+(e.dataset.s||22)));
 
@@ -330,6 +369,17 @@ function openGameSheet(id){
 }
 
 /* ---------- Friends and chat ---------- */
+const AVICONS=['pawn','dice','cards','ladder','carrom','set','trophy'];
+const PALETTE=['#E5484D','#2F7DD1','#D9731A','#1E9E6A','#8A5A2B','#B5367F','#0E9AA7','#5F6B7A'];
+const safeColor=c=>/^#[0-9a-fA-F]{6}$/.test(c||'')?c:'';
+const safeIcon=i=>AVICONS.includes(i)?i:'';
+const safePic=p=>/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]*$/.test(p||'')&&p.length<=12000?p:'';
+function avatarHtml(p,st,size,id){
+  const sz=size?`width:${size}px;height:${size}px;font-size:${Math.round(size*.42)}px;`:'';
+  const pic=safePic(p.pic),icon=safeIcon(p.icon);
+  const inner=pic?`<img src="${pic}" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:icon?ico(icon,Math.round((size||46)*.55)):esc((p.name||'?')[0]);
+  return `<div class="av"${id?` id="${id}"`:''} style="background:${safeColor(p.color)||colorFor(p.name||'')};${sz}">${inner}${st?`<i class="dot ${st}"></i>`:''}</div>`;
+}
 const COLORS=['#E5484D','#2F7DD1','#D9731A','#1E9E6A','#8A5A2B','#B5367F'];
 const colorFor=t=>{let h=0;for(const c of String(t))h=(h*31+c.charCodeAt(0))>>>0;return COLORS[h%COLORS.length]};
 const fmtSize=n=>n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';
@@ -363,11 +413,11 @@ function renderRealFriends(v){
   v.innerHTML=`<h2>Friends</h2>
     <div class="addf"><input id="fcode" placeholder="Enter a friend code" maxlength="6" autocomplete="off" autocapitalize="characters" aria-label="Friend code"><button class="btn" id="fAdd">Add</button></div>
     <div style="color:var(--muted);font-size:13px;margin:4px 2px 0">Your code: <b style="color:var(--ink);letter-spacing:2px">${esc(me.code||'')}</b>. Share it with a friend.</div>
-    ${inc.length?`<h2>Requests</h2>`+inc.map(f=>`<div class="row">${avatar(f.name,f.color)}<div class="t"><b>${esc(f.name)}</b><span>Friend request</span></div><button class="btn sm" data-acc="${f.pair}">Accept</button><button class="btn alt sm" data-dec="${f.pair}">Decline</button></div>`).join(''):''}
+    ${inc.length?`<h2>Requests</h2>`+inc.map(f=>`<div class="row">${avatarHtml(f)}<div class="t"><b>${esc(f.name)}</b><span>Friend request</span></div><button class="btn sm" data-acc="${f.pair}">Accept</button><button class="btn alt sm" data-dec="${f.pair}">Decline</button></div>`).join(''):''}
     <h2>${ok.length?'Your friends':'No friends yet'}</h2>
-    ${ok.map(f=>`<button class="row" data-f="${f.id}">${avatar(f.name,f.color,f.st)}<div class="t"><b>${esc(f.name)}</b><span>${esc(stText(f))}</span></div></button>`).join('')}
+    ${ok.map(f=>`<button class="row" data-f="${f.id}">${avatarHtml(f,f.st)}<div class="t"><b>${esc(f.name)}</b><span>${esc(stText(f))}</span></div></button>`).join('')}
     ${ok.length?'':'<div class="note" style="margin-top:0">Enter a friend code above, or share yours, to get started.</div>'}
-    ${out.length?`<h2>Waiting for a reply</h2>`+out.map(f=>`<div class="row">${avatar(f.name,f.color)}<div class="t"><b>${esc(f.name)}</b><span>Request sent</span></div><button class="btn alt sm" data-cancel="${f.pair}">Cancel</button></div>`).join(''):''}`;
+    ${out.length?`<h2>Waiting for a reply</h2>`+out.map(f=>`<div class="row">${avatarHtml(f)}<div class="t"><b>${esc(f.name)}</b><span>Request sent</span></div><button class="btn alt sm" data-cancel="${f.pair}">Cancel</button></div>`).join(''):''}`;
   const inp=$('#fcode');inp.value=keep;if(hadFocus)inp.focus();
   v.querySelectorAll('button.row[data-f]').forEach(r=>r.onclick=()=>openThread(r.dataset.f));
   v.querySelectorAll('[data-acc]').forEach(b=>b.onclick=()=>FB.acceptFriend(b.dataset.acc).then(()=>toast('Friend added.')).catch(window.ffError));
@@ -377,8 +427,8 @@ function renderRealFriends(v){
 }
 function openThread(id){
   thFriend=FRIENDS.find(f=>f.id===id);if(!thFriend)return;
-  $('#thAv').outerHTML=`<div class="av" id="thAv" style="background:${thFriend.color}">${esc(thFriend.name[0])}</div>`;
-  $('#thName').textContent=thFriend.name;$('#thSt').textContent=stText(thFriend);
+  $('#thAv').outerHTML=avatarHtml(thFriend,'',46,'thAv');
+  $('#thName').textContent=thFriend.name;$('#thSt').textContent=stText(thFriend)+(thFriend.bio?' | '+thFriend.bio:'');
   $('#thread').classList.add('on');
   if(REAL){liveMsgs=[];stopWatch();unwatchMsgs=FB.watchMessages(thFriend.pair,list=>{liveMsgs=list;if(thFriend)drawThread()})}
   drawThread();
@@ -456,32 +506,32 @@ $('#thMsgs').onclick=e=>{
 /* ---------- Me ---------- */
 function renderMe(){
   const v=$('#v-me');
+  const setBtn=`<button class="btn" id="openSet" style="margin:12px 0 10px">Settings</button>`;
   if(me){
-    v.innerHTML=`<h2>Me</h2><div class="row">${avatar(me.name,colorFor(me.name),'online')}<div class="t"><b>${esc(me.name)}</b><span>${REAL?'Signed in with Google':'Demo account on this phone only'}</span></div>${REAL?'<button class="btn alt sm" id="editName">Edit name</button>':''}</div>
+    v.innerHTML=`<h2>Me</h2><div class="row">${avatarHtml(me,'online')}<div class="t"><b>${esc(me.name)}</b><span>${esc(me.bio||(REAL?'Signed in with Google':'Demo account on this phone only'))}</span></div></div>
     ${REAL?`<div class="row"><div class="t"><b>Your friend code</b><span style="font-size:20px;letter-spacing:3px;color:var(--ink)">${esc(me.code||'')}</span></div><button class="btn alt sm" id="cpCode">Copy</button></div>`:''}
     <div class="row"><div class="t"><b>Games played</b><span>${store.get('ff_played',0)} played, ${store.get('ff_wins',0)} won${REAL?' (saved on this phone)':''}</span></div></div>
+    ${setBtn}
     <button class="btn alt" id="upLogo" style="margin-bottom:10px">Change app logo</button>
     <button class="btn alt" id="signOut">Sign out</button>`;
     $('#signOut').onclick=()=>{if(REAL){FB.signOut().catch(window.ffError);return}me=null;store.set('ff_user',null);setChip();renderMe();toast('Signed out. You are a guest now.')};
-    const en=$('#editName');
-    if(en)en.onclick=()=>{
-      openSheet(`<h3>Display name</h3><p>This is the name your friends see. You can change it any time.</p><input id="newName" maxlength="30" value="${esc(me.name)}" autocomplete="off" aria-label="Display name" style="width:100%;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:12px;font:inherit;margin-bottom:12px"><button class="btn" id="saveName">Save</button>`);
-      $('#saveName').onclick=async()=>{try{me.name=await FB.updateName($('#newName').value);closeSheet();setChip();renderMe();toast('Name updated.')}catch(e){toast(errText(e))}};
-    };
     const cp=$('#cpCode');if(cp)cp.onclick=()=>{try{navigator.clipboard.writeText(me.code).then(()=>toast('Code copied'),()=>toast('Your code is '+me.code))}catch(e){toast('Your code is '+me.code)}};
   }else if(REAL){
     v.innerHTML=`<h2>Welcome</h2><div class="note solid">Sign in with Google to add friends, chat and see who is online. Or just play as a guest.<br><br><button class="btn" id="gSign">Continue with Google</button></div>
-    <button class="btn alt" id="upLogo" style="margin-top:12px">Set app logo</button>`;
+    ${setBtn}
+    <button class="btn alt" id="upLogo">Set app logo</button>`;
     $('#gSign').onclick=()=>FB.signIn().catch(window.ffError);
   }else{
     v.innerHTML=`<h2>Welcome</h2><div class="note solid">Sign in to chat with friends in the lobby, see who is online and keep your game progress. Or just play as a guest.<br><br>
     <input id="nm" placeholder="Your name (demo sign-in)" style="width:100%;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:12px;font:inherit;margin-bottom:10px">
     <button class="btn" id="gSign">Continue with Google</button></div>
-    <button class="btn alt" id="upLogo" style="margin-top:12px">Set app logo</button>
+    ${setBtn}
+    <button class="btn alt" id="upLogo">Set app logo</button>
     <div class="note">Demo mode: this button simulates Google sign-in, and the friends shown are sample data. Real accounts need the online backend.</div>`;
     $('#gSign').onclick=()=>{const n=$('#nm').value.trim()||'Player';me={name:n};store.set('ff_user',me);setChip();toast('Welcome, '+n);setTab('chats')};
   }
   $('#upLogo').onclick=()=>$('#logoFile').click();
+  $('#openSet').onclick=()=>openSettings();
 }
 $('#logoFile').onchange=e=>{
   const f=e.target.files[0];if(!f)return;const r=new FileReader();
@@ -489,6 +539,203 @@ $('#logoFile').onchange=e=>{
   r.readAsDataURL(f);
 };
 try{const l=localStorage.getItem('ff_logo');if(l)$('#logo').innerHTML=`<img alt="FUSS &amp; FUN logo" src="${l}">`}catch(e){}
+
+/* ---------- Settings ---------- */
+const SET=Object.assign({sound:true,calm:false,showOnline:true,showGame:true},store.get('ff_settings',{}));
+const saveSet=()=>store.set('ff_settings',SET);
+document.documentElement.classList.toggle('calm',!!SET.calm);
+
+const PRESETS=[
+ {n:'Table',bg:'#0E3A2D',accent:'#E8B84A'},
+ {n:'Midnight',bg:'#0F1B33',accent:'#5BC0EB'},
+ {n:'Charcoal',bg:'#1B1B1D',accent:'#FF8A3D'},
+ {n:'Burgundy',bg:'#3A1218',accent:'#F2C14E'},
+ {n:'Daylight',bg:'#E8EEF2',accent:'#1F6FEB'}
+];
+const hex2rgb=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const rgb2hex=a=>'#'+a.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,'0')).join('');
+const mix=(a,b,t)=>{const x=hex2rgb(a),y=hex2rgb(b);return rgb2hex(x.map((v,i)=>v+(y[i]-v)*t))};
+const lum=h=>{const [r,g,b]=hex2rgb(h).map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)});return .2126*r+.7152*g+.0722*b};
+const contrast=(a,b)=>{const l1=lum(a),l2=lum(b);return (Math.max(l1,l2)+.05)/(Math.min(l1,l2)+.05)};
+function themeVars(bg,accent){
+  const dark=lum(bg)<.4,ink=dark?'#F3EEDC':'#10241C';
+  const v={'--bg':bg,'--ink':ink,'--brass':accent,'--brass-ink':contrast(accent,'#1A1300')>=contrast(accent,'#FFFFFF')?'#1A1300':'#FFFFFF','--scheme':dark?'dark':'light'};
+  if(dark){v['--deep']=mix(bg,'#000000',.3);v['--panel']=mix(bg,'#ffffff',.08);v['--panel2']=mix(bg,'#ffffff',.15);v['--line']=mix(bg,'#ffffff',.22)}
+  else{v['--deep']=mix(bg,'#ffffff',.6);v['--panel']=mix(bg,'#000000',.05);v['--panel2']=mix(bg,'#000000',.1);v['--line']=mix(bg,'#000000',.2)}
+  v['--muted']=mix(ink,bg,.35);
+  return v;
+}
+function applyTheme(bg,accent,save){
+  const v=themeVars(bg,accent),r=document.documentElement;
+  Object.entries(v).forEach(([k,x])=>r.style.setProperty(k,x));
+  r.style.colorScheme=v['--scheme'];
+  const m=document.querySelector('meta[name=theme-color]');if(m)m.setAttribute('content',bg);
+  if(save){store.set('ff_theme',{bg,accent});store.set('ff_theme_vars',v)}
+}
+
+const hydrate=u=>({...u,color:safeColor(u.color)||colorFor(u.name),icon:safeIcon(u.icon),pic:safePic(u.pic),bio:String(u.bio||'').slice(0,40)});
+const cleanName=n=>String(n||'').replace(/[\u0000-\u001f\u007f]/g,'').replace(/\s+/g,' ').trim().slice(0,30);
+
+let AC=null;
+function sfx(kind,force){
+  if(!SET.sound&&!force)return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended')AC.resume();
+    const t=AC.currentTime;
+    const tone=(f,d,st,type,v)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(v||.05,t+st);g.gain.exponentialRampToValueAtTime(.0001,t+st+d);o.connect(g);g.connect(AC.destination);o.start(t+st);o.stop(t+st+d+.02)};
+    if(kind==='roll')[0,.07,.14,.21].forEach((st,i)=>tone(300+i*40,.06,st,'square',.025));
+    else if(kind==='step')tone(520,.07,0,'triangle',.05);
+    else if(kind==='ladder')[392,494,587,784].forEach((f,i)=>tone(f,.12,i*.08));
+    else if(kind==='snake')[400,330,262,196].forEach((f,i)=>tone(f,.14,i*.09,'sawtooth',.03));
+    else if(kind==='win')[523,659,784,1047].forEach((f,i)=>tone(f,.2,i*.12));
+    else if(kind==='msg')tone(880,.08,0,'sine',.04);
+  }catch(e){}
+}
+
+function presenceFor(st,game){
+  if(!SET.showOnline)return{st:'offline',game:''};
+  if(st==='playing'&&!SET.showGame)return{st:'online',game:''};
+  return{st,game:game||''};
+}
+function pushPresence(st,game){if(!REAL||!me)return;const q=presenceFor(st,game);FB.setPresence(q.st,q.game)}
+window.ffPresence=()=>presenceFor(G?'playing':'online',G?G.name:'');
+
+async function micState(){try{return (await navigator.permissions.query({name:'microphone'})).state}catch(e){return 'unknown'}}
+async function askMic(){
+  try{const m=await navigator.mediaDevices.getUserMedia({audio:true});m.getTracks().forEach(t=>t.stop());return 'granted'}
+  catch(e){return e&&e.name==='NotAllowedError'?'denied':'error'}
+}
+
+let stPage='home',pd=null;
+function openSettings(page){stPage=page||'home';pd=null;$('#settings').classList.add('on');renderSettings()}
+function closeSettings(){$('#settings').classList.remove('on');pd=null;if(curTab==='me')renderMe()}
+$('#stBack').onclick=()=>{if(stPage==='home')closeSettings();else{stPage='home';pd=null;renderSettings()}};
+function renderSettings(){
+  const titles={home:'Settings',profile:'Profile',theme:'Theme',sound:'Sound and motion',privacy:'Privacy',perm:'Permissions'};
+  $('#stTitle').textContent=titles[stPage];
+  ({home:pgHome,profile:pgProfile,theme:pgTheme,sound:pgSound,privacy:pgPrivacy,perm:pgPerm})[stPage]();
+  $('#stBody').scrollTop=0;
+}
+const tgRow=(k,title,sub)=>`<div class="row"><div class="t"><b>${title}</b><span class="w">${sub}</span></div><button class="tg" role="switch" data-k="${k}" aria-checked="${!!SET[k]}" aria-label="${title}"></button></div>`;
+function wireToggles(root){
+  root.querySelectorAll('.tg').forEach(t=>t.onclick=()=>{
+    const k=t.dataset.k;SET[k]=!SET[k];saveSet();t.setAttribute('aria-checked',String(SET[k]));
+    if(k==='calm')document.documentElement.classList.toggle('calm',SET.calm);
+    if(k==='showOnline'||k==='showGame')pushPresence(G?'playing':'online',G?G.name:'');
+    if(k==='sound'&&SET.sound)sfx('msg');
+  });
+}
+
+function pgHome(){
+  const rows=[['profile','user','Profile','Name, photo, color and about me',!!me],['theme','palette','Theme','Background and highlight colors',true],['sound','volume','Sound and motion','Sound effects and reduced motion',true],['privacy','shield','Privacy','Who can see you online',!!me],['perm','mic','Permissions','Microphone and speaker',true]].filter(r=>r[4]);
+  const b=$('#stBody');
+  b.innerHTML=rows.map(r=>`<button class="row" data-p="${r[0]}"><span class="sico">${ico(r[1],22)}</span><div class="t"><b>${r[2]}</b><span>${r[3]}</span></div>${ico('chev',20)}</button>`).join('')+(me?'':`<div class="note">Sign in to customize your profile and privacy.</div>`)+`<p class="hint" style="text-align:center;margin-top:8px">Theme and sound settings are saved on this phone.</p>`;
+  b.querySelectorAll('[data-p]').forEach(x=>x.onclick=()=>{stPage=x.dataset.p;renderSettings()});
+}
+
+function pgTheme(){
+  const cur=store.get('ff_theme',null)||{bg:PRESETS[0].bg,accent:PRESETS[0].accent};
+  const b=$('#stBody');
+  b.innerHTML=`<div class="grp"><b>Presets</b><div class="pre">${PRESETS.map((p,i)=>`<button data-i="${i}" class="${p.bg.toLowerCase()===cur.bg.toLowerCase()&&p.accent.toLowerCase()===cur.accent.toLowerCase()?'on':''}"><i style="background:${p.bg}"><u style="background:${p.accent}"></u></i>${p.n}</button>`).join('')}</div></div>
+  <div class="grp"><b>Custom theme</b>
+    <div class="row"><div class="t"><b>Background color</b><span class="w">The main screen color</span></div><input type="color" id="cBg" value="${cur.bg.toLowerCase()}" aria-label="Background color"></div>
+    <div class="row"><div class="t"><b>Highlight color</b><span class="w">Buttons and selected items</span></div><input type="color" id="cAcc" value="${cur.accent.toLowerCase()}" aria-label="Highlight color"></div>
+    <p class="hint" id="cHint"></p></div>
+  <button class="btn alt" id="thReset">Reset to default</button>`;
+  const hint=()=>{$('#cHint').textContent=contrast($('#cBg').value,$('#cAcc').value)<3?'These two colors are close together, so selected items may be hard to see.':''};
+  hint();
+  b.querySelectorAll('.pre button').forEach(x=>x.onclick=()=>{const q=PRESETS[+x.dataset.i];applyTheme(q.bg,q.accent,true);pgTheme()});
+  const live=()=>{applyTheme($('#cBg').value,$('#cAcc').value,true);hint();b.querySelectorAll('.pre button').forEach(x=>x.classList.remove('on'))};
+  $('#cBg').oninput=live;$('#cAcc').oninput=live;
+  $('#thReset').onclick=()=>{applyTheme(PRESETS[0].bg,PRESETS[0].accent,true);pgTheme()};
+}
+
+function pgSound(){
+  const b=$('#stBody');
+  b.innerHTML=tgRow('sound','Sound effects','Dice, moves and messages in games')+tgRow('calm','Reduce motion','Turns off shaking, hopping and confetti')+`<button class="btn alt" id="sTest">Play test sound</button>`;
+  wireToggles(b);$('#sTest').onclick=()=>sfx('win',true);
+}
+
+function pgPrivacy(){
+  const b=$('#stBody');
+  b.innerHTML=tgRow('showOnline','Show when I am online','If off, friends always see you as offline')+tgRow('showGame','Show the game I am playing','If off, friends see Online instead of Playing')+`<p class="hint">Your friends can see your name, picture, about me and status. A person who sends you a request using your friend code can see your name and picture until you accept or decline. Your email is never shown to other players.</p>`;
+  wireToggles(b);
+}
+
+function pgPerm(){
+  const b=$('#stBody');
+  b.innerHTML=`<div class="row"><div class="sico">${ico('mic',22)}</div><div class="t"><b>Microphone</b><span class="w" id="micTxt">Checking</span></div><button class="btn sm" id="micBtn" style="display:none">Allow</button></div>
+  <div class="row"><div class="sico">${ico('volume',22)}</div><div class="t"><b>Speaker</b><span class="w">No permission needed. Use your phone volume buttons.</span></div><button class="btn alt sm" id="spTest">Test</button></div>
+  <p class="hint">Voice chat arrives in a later stage. If you allow the microphone now, your browser remembers your choice for this site and will not ask again. To change it later, tap the lock icon next to the web address, then Permissions.</p>`;
+  const blocked='Blocked. Tap the lock icon next to the web address, then Permissions, then Microphone, then Allow.';
+  const upd=async()=>{
+    const st=await micState(),t=$('#micTxt'),btn=$('#micBtn');if(!t||!btn)return;
+    if(st==='granted'){t.textContent='Allowed. It will not ask again.';btn.style.display='none'}
+    else if(st==='denied'){t.textContent=blocked;btn.style.display='none'}
+    else{t.textContent=st==='prompt'?'Not asked yet.':'Tap Allow to ask once.';btn.style.display=''}
+  };
+  $('#micBtn').onclick=async()=>{
+    const r=await askMic();
+    if(r==='error')toast('No microphone was found on this device.');
+    await upd();
+    if(r==='denied'&&$('#micTxt')){$('#micTxt').textContent=blocked;$('#micBtn').style.display='none'}
+  };
+  $('#spTest').onclick=()=>sfx('win',true);
+  upd();
+}
+
+function pgProfile(){
+  if(!me){stPage='home';return pgHome()}
+  if(!pd)pd={name:me.name,bio:me.bio||'',color:safeColor(me.color)||colorFor(me.name),icon:safeIcon(me.icon),pic:safePic(me.pic)};
+  const b=$('#stBody');
+  b.innerHTML=`<div id="pvWrap" style="display:flex;justify-content:center;padding:6px 0"></div>
+  <div style="display:flex;gap:8px"><button class="btn alt" id="pPick">Choose photo</button><button class="btn alt" id="pClear">Remove photo</button></div>
+  <div class="grp"><b>Color</b><div class="sw" id="pSw"></div></div>
+  <div class="grp"><b>Picture style</b><div class="ics" id="pIc"></div></div>
+  <div class="grp"><b>Name</b><input class="fld" id="pName" maxlength="30" autocomplete="off" aria-label="Name"></div>
+  <div class="grp"><b>About me</b><input class="fld" id="pBio" maxlength="40" autocomplete="off" placeholder="A short line your friends see" aria-label="About me"></div>
+  <button class="btn" id="pSave">Save profile</button>`;
+  $('#pName').value=pd.name;$('#pBio').value=pd.bio;
+  const prev=()=>{$('#pvWrap').innerHTML=avatarHtml(pd,'',92)};
+  const paint=()=>{
+    prev();
+    $('#pSw').innerHTML=PALETTE.map(c=>`<button class="swb${pd.color.toLowerCase()===c.toLowerCase()?' on':''}" data-c="${c}" style="background:${c}" aria-label="Color ${c}"></button>`).join('')+`<input type="color" id="pColor" value="${pd.color.toLowerCase()}" aria-label="Custom color">`;
+    $('#pIc').innerHTML=`<button class="icb${pd.icon?'':' on'}" data-i="" aria-label="Initial letter">Aa</button>`+AVICONS.map(i=>`<button class="icb${pd.icon===i?' on':''}" data-i="${i}" aria-label="${i}">${ico(i,22)}</button>`).join('');
+    $('#pSw').querySelectorAll('.swb').forEach(x=>x.onclick=()=>{pd.color=x.dataset.c;paint()});
+    $('#pColor').oninput=e=>{pd.color=e.target.value;prev()};
+    $('#pIc').querySelectorAll('.icb').forEach(x=>x.onclick=()=>{pd.icon=x.dataset.i;paint()});
+  };
+  paint();
+  $('#pName').oninput=e=>{pd.name=e.target.value;prev()};
+  $('#pBio').oninput=e=>{pd.bio=e.target.value};
+  $('#pPick').onclick=()=>$('#avFile').click();
+  $('#pClear').onclick=()=>{pd.pic='';paint()};
+  $('#pSave').onclick=async()=>{
+    const name=cleanName(pd.name);
+    if(name.length<2)return toast('Use at least 2 characters for your name.');
+    const prof={name,bio:cleanName(pd.bio).slice(0,40),color:pd.color,icon:pd.icon||'',pic:pd.pic||''};
+    try{
+      const saved=REAL?await FB.updateProfile(prof):prof;
+      Object.assign(me,saved);if(!REAL)store.set('ff_user',me);
+      pd=null;setChip();toast('Profile saved.');stPage='home';renderSettings();
+    }catch(e){toast(errText(e))}
+  };
+}
+$('#avFile').onchange=e=>{
+  const file=e.target.files[0];e.target.value='';if(!file||!pd)return;
+  const img=new Image(),url=URL.createObjectURL(file);
+  img.onload=()=>{
+    const c=document.createElement('canvas');c.width=c.height=96;
+    const sq=Math.min(img.width,img.height),sx=(img.width-sq)/2,sy=(img.height-sq)/2;
+    c.getContext('2d').drawImage(img,sx,sy,sq,sq,0,0,96,96);URL.revokeObjectURL(url);
+    let q=.7,d=c.toDataURL('image/jpeg',q);
+    while(d.length>11000&&q>.3){q-=.1;d=c.toDataURL('image/jpeg',q)}
+    if(d.length>11000)return toast('That picture is too detailed. Try another one.');
+    pd.pic=d;if(stPage==='profile')pgProfile();
+  };
+  img.onerror=()=>toast('That image could not be opened.');img.src=url;
+};
 
 /* ---------- Snake & Ladder ---------- */
 const LAD={4:25,13:46,27:65,40:59,52:71,69:91};
@@ -544,7 +791,7 @@ function drawGChat(){
   $('#gLive').innerHTML=G.chat.slice(-40).map(m=>`<div><b class="${m.from==='You'?'you':''}">${esc(m.from)}</b>${esc(m.text)}</div>`).join('');
   $('#gLive').scrollTop=1e9;
 }
-function gChatAdd(from,text){G.chat.push({from,text});drawGChat()}
+function gChatAdd(from,text){G.chat.push({from,text});drawGChat();if(from!=='You'&&from!=='Table')sfx('msg')}
 
 function startSnake(ids){
   const names=[(me?me.name:'You'),...ids.map(id=>FRIENDS.find(f=>f.id===id).name)];
@@ -553,7 +800,7 @@ function startSnake(ids){
   ids.forEach(id=>{const f=FRIENDS.find(x=>x.id===id);f.prev=[f.st,f.game];f.st='playing';f.game='Snake & Ladder'});
   buildBoard();G.players.forEach((_,i)=>placeTok(i));drawPlayers();setDie(5);
   $('#gcMsgs').innerHTML='';$('#gLive').innerHTML='';$('#gMic').classList.remove('hot');
-  $('#play').classList.add('on');setChip();if(REAL&&me)FB.setPresence('playing','Snake & Ladder');
+  $('#play').classList.add('on');setChip();pushPresence('playing','Snake & Ladder');
   gChatAdd('Table','Game started. Good luck everyone.');
   turnStart();
 }
@@ -564,7 +811,7 @@ function turnStart(){
 }
 $('#rollBtn').onclick=()=>{if(!G||G.busy||G.players[G.turn].bot)return;doRoll()};
 function doRoll(){
-  if(!G||G.busy)return;G.busy=true;$('#rollBtn').disabled=true;
+  if(!G||G.busy)return;G.busy=true;$('#rollBtn').disabled=true;sfx('roll');
   const d=$('#die');d.classList.add('roll');
   const v=1+Math.floor(Math.random()*6);
   const tick=setInterval(()=>setDie(1+Math.floor(Math.random()*6)),90);
@@ -576,11 +823,11 @@ function moveBy(v){
   let s=0;gSay(p.name+' rolled '+v);
   const step=()=>{
     if(!G)return;
-    if(s<v){p.pos++;s++;placeTok(i);hop(i);drawPlayers();setTimeout(step,260)}
+    if(s<v){p.pos++;s++;sfx('step');placeTok(i);hop(i);drawPlayers();setTimeout(step,260)}
     else setTimeout(()=>{
       if(!G)return;
       const jump=LAD[p.pos]||SNK[p.pos];
-      if(jump){const up=!!LAD[p.pos];gSay(up?p.name+' climbs a ladder.':p.name+' got bitten by a snake.');
+      if(jump){const up=!!LAD[p.pos];sfx(up?'ladder':'snake');gSay(up?p.name+' climbs a ladder.':p.name+' got bitten by a snake.');
         if(!up)gChatAdd('Table',p.name+' slid down to '+jump);
         setTimeout(()=>{if(!G)return;p.pos=jump;placeTok(i,true);drawPlayers();setTimeout(()=>afterMove(v),950)},500)}
       else afterMove(v);
@@ -595,12 +842,12 @@ function endTurn(v){
   if(Math.random()<.25){const b=G.players.filter(x=>x.bot);if(b.length){const q=b[Math.floor(Math.random()*b.length)];setTimeout(()=>G&&gChatAdd(q.name,['nice one','my turn soon','so close','oh no'][Math.floor(Math.random()*4)]),1200)}}
 }
 function confetti(){
-  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  if(SET.calm||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   const cols=['#E5484D','#2F7DD1','#E8B84A','#1E9E6A','#F3EEDC'];
   for(let i=0;i<28;i++){const s=document.createElement('span');s.className='cf';s.style.background=cols[i%5];s.style.left=Math.random()*100+'vw';s.style.animationDelay=Math.random()*.8+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),3500)}
 }
 function win(p){
-  G.busy=true;const mine=!p.bot;
+  G.busy=true;sfx('win');const mine=!p.bot;
   store.set('ff_played',store.get('ff_played',0)+1);if(mine)store.set('ff_wins',store.get('ff_wins',0)+1);
   if(mine)confetti();
   openSheet(`<h3>${ico('trophy',28)}${mine?'You win':esc(p.name)+' wins'}</h3><p>${mine?'Great rolls.':'So close. Want a rematch?'}${me?' Your result is saved to your account.':' Sign in to save your results.'}</p><button class="btn" id="again" style="margin-bottom:10px">Play again</button><button class="btn alt" id="leave">Back to lobby</button>`);
@@ -610,7 +857,7 @@ function win(p){
 function endGame(keep){
   if(!G)return;
   FRIENDS.forEach(f=>{if(f.prev){f.st=f.prev[0];f.game=f.prev[1];delete f.prev}});
-  G=null;$('#play').classList.remove('on');$('#gchat').classList.remove('on');setChip();if(REAL&&me)FB.setPresence('online','');if(!keep)setTab(curTab);
+  G=null;$('#play').classList.remove('on');$('#gchat').classList.remove('on');setChip();pushPresence('online','');if(!keep)setTab(curTab);
 }
 $('#gQuit').onclick=()=>{
   openSheet(`<h3>Leave the game?</h3><p>Your friends will be told you left.</p><button class="btn" id="stay" style="margin-bottom:10px">Keep playing</button><button class="btn alt" id="lv">Leave</button>`);
@@ -627,14 +874,14 @@ $('#gMic').onclick=()=>{if(!G)return;G.mic=!G.mic;$('#gMic').classList.toggle('h
 window.ffReady=()=>{REAL=true;me=null;FRIENDS=[];chats={};setChip();setTab(curTab)};
 window.ffAuth=u=>{
   const fromMe=curTab==='me';
-  me=u;
+  me=u?hydrate(u):null;
   if(!u){FRIENDS=[];if(thFriend){$('#thread').classList.remove('on');thFriend=null;stopWatch()}}
   setChip();
   setTab(u&&fromMe?'chats':curTab);
 };
 window.ffFriends=list=>{
-  FRIENDS=list.map(f=>({...f,color:colorFor(f.name)}));
-  if(thFriend){const f=FRIENDS.find(x=>x.id===thFriend.id);if(f){thFriend=f;$('#thSt').textContent=stText(f)}}
+  FRIENDS=list.map(f=>({...f,color:safeColor(f.color)||colorFor(f.name),icon:safeIcon(f.icon),pic:safePic(f.pic),bio:String(f.bio||'').slice(0,40)}));
+  if(thFriend){const f=FRIENDS.find(x=>x.id===thFriend.id);if(f){thFriend=f;$('#thSt').textContent=stText(f)+(f.bio?' | '+f.bio:'');$('#thAv').outerHTML=avatarHtml(f,'',46,'thAv')}}
   if(curTab==='chats'&&me)renderChats();
 };
 setChip();renderGames();
@@ -674,7 +921,7 @@ if(A&&S){
   };
   const emit=()=>window.ffFriends([...fr.values()].map(x=>{
     const p=prof.get(x.other)||{},s=statusOf(p);
-    return{id:x.other,pair:x.pair,state:x.state,name:p.name||'Friend',st:s.st,game:s.game};
+    return{id:x.other,pair:x.pair,state:x.state,name:p.name||'Friend',st:s.st,game:s.game,color:p.color,icon:p.icon,bio:p.bio,pic:p.pic};
   }));
   const stopAll=()=>{
     unsubs.forEach(u=>u());unsubs=[];
@@ -686,7 +933,11 @@ if(A&&S){
   const clean=n=>String(n||'').replace(/[\u0000-\u001f\u007f]/g,'').replace(/\s+/g,' ').trim().slice(0,30);
   async function ensureProfile(user){
     const ref=S.doc(db,'users',user.uid),snap=await S.getDoc(ref);
-    if(snap.exists()){const d=snap.data();return{name:d.name,code:d.code}}
+    if(snap.exists()){
+      const d=snap.data();
+      if('photo' in d)S.updateDoc(ref,{photo:S.deleteField()}).catch(()=>{});
+      return{name:d.name,code:d.code,color:d.color||'',icon:d.icon||'',bio:d.bio||'',pic:d.pic||''};
+    }
     let code='';
     for(let i=0;i<8&&!code;i++){
       const c=newCode(),cs=await S.getDoc(S.doc(db,'codes',c));
@@ -720,13 +971,16 @@ if(A&&S){
 
   window.FB={
     signIn:()=>A.signInWithPopup(auth,provider),
-    async updateName(n){
-      n=clean(n);
-      if(n.length<2)throw new Error('Use at least 2 characters.');
-      await S.updateDoc(S.doc(db,'users',uid),{name:n});
-      return n;
+    async updateProfile(p){
+      const name=clean(p.name);
+      if(name.length<2)throw new Error('Use at least 2 characters.');
+      const color=/^#[0-9a-fA-F]{6}$/.test(p.color||'')?p.color:'#2F7DD1';
+      const icon=['','pawn','dice','cards','ladder','carrom','set','trophy'].includes(p.icon)?p.icon:'';
+      const bio=clean(p.bio).slice(0,40);
+      const pic=/^data:image\/jpeg;base64,[A-Za-z0-9+\/=]*$/.test(p.pic||'')&&p.pic.length<=12000?p.pic:'';
+      await S.updateDoc(S.doc(db,'users',uid),{name,color,icon,bio,pic});
+      return{name,color,icon,bio,pic};
     },
-    signOut:async()=>{await writePresence('offline');return A.signOut(auth)},
     setPresence(st,game){cur={st,game:game||''};if(uid&&document.visibilityState!=='hidden')return writePresence(cur.st)},
     async addFriend(code){
       code=String(code||'').trim().toUpperCase();
@@ -759,12 +1013,12 @@ if(A&&S){
     if(!user){window.ffFriends([]);window.ffAuth(null);return}
     try{
       const p=await ensureProfile(user);
-      uid=user.uid;cur={st:'online',game:''};
-      writePresence('online');
+      uid=user.uid;cur=(window.ffPresence&&window.ffPresence())||{st:'online',game:''};
+      writePresence(cur.st);
       hb=setInterval(()=>{if(document.visibilityState!=='hidden')writePresence(cur.st)},45000);
       tick=setInterval(emit,30000);
       watchFriends();
-      window.ffAuth({uid:user.uid,name:p.name,code:p.code});
+      window.ffAuth({uid:user.uid,...p});
     }catch(e){window.ffError(e);window.ffAuth(null)}
   });
 }
