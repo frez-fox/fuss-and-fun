@@ -457,12 +457,17 @@ $('#thMsgs').onclick=e=>{
 function renderMe(){
   const v=$('#v-me');
   if(me){
-    v.innerHTML=`<h2>Me</h2><div class="row">${avatar(me.name,colorFor(me.name),'online')}<div class="t"><b>${esc(me.name)}</b><span>${REAL?'Signed in with Google':'Demo account on this phone only'}</span></div></div>
+    v.innerHTML=`<h2>Me</h2><div class="row">${avatar(me.name,colorFor(me.name),'online')}<div class="t"><b>${esc(me.name)}</b><span>${REAL?'Signed in with Google':'Demo account on this phone only'}</span></div>${REAL?'<button class="btn alt sm" id="editName">Edit name</button>':''}</div>
     ${REAL?`<div class="row"><div class="t"><b>Your friend code</b><span style="font-size:20px;letter-spacing:3px;color:var(--ink)">${esc(me.code||'')}</span></div><button class="btn alt sm" id="cpCode">Copy</button></div>`:''}
     <div class="row"><div class="t"><b>Games played</b><span>${store.get('ff_played',0)} played, ${store.get('ff_wins',0)} won${REAL?' (saved on this phone)':''}</span></div></div>
     <button class="btn alt" id="upLogo" style="margin-bottom:10px">Change app logo</button>
     <button class="btn alt" id="signOut">Sign out</button>`;
     $('#signOut').onclick=()=>{if(REAL){FB.signOut().catch(window.ffError);return}me=null;store.set('ff_user',null);setChip();renderMe();toast('Signed out. You are a guest now.')};
+    const en=$('#editName');
+    if(en)en.onclick=()=>{
+      openSheet(`<h3>Display name</h3><p>This is the name your friends see. You can change it any time.</p><input id="newName" maxlength="30" value="${esc(me.name)}" autocomplete="off" aria-label="Display name" style="width:100%;border:2px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:12px;font:inherit;margin-bottom:12px"><button class="btn" id="saveName">Save</button>`);
+      $('#saveName').onclick=async()=>{try{me.name=await FB.updateName($('#newName').value);closeSheet();setChip();renderMe();toast('Name updated.')}catch(e){toast(errText(e))}};
+    };
     const cp=$('#cpCode');if(cp)cp.onclick=()=>{try{navigator.clipboard.writeText(me.code).then(()=>toast('Code copied'),()=>toast('Your code is '+me.code))}catch(e){toast('Your code is '+me.code)}};
   }else if(REAL){
     v.innerHTML=`<h2>Welcome</h2><div class="note solid">Sign in with Google to add friends, chat and see who is online. Or just play as a guest.<br><br><button class="btn" id="gSign">Continue with Google</button></div>
@@ -678,6 +683,7 @@ if(A&&S){
     clearInterval(hb);clearInterval(tick);
   };
 
+  const clean=n=>String(n||'').replace(/[\u0000-\u001f\u007f]/g,'').replace(/\s+/g,' ').trim().slice(0,30);
   async function ensureProfile(user){
     const ref=S.doc(db,'users',user.uid),snap=await S.getDoc(ref);
     if(snap.exists()){const d=snap.data();return{name:d.name,code:d.code}}
@@ -687,9 +693,9 @@ if(A&&S){
       if(!cs.exists())code=c;
     }
     if(!code)throw new Error('Could not create a friend code. Please try again.');
+    const name=clean(user.displayName)||'Player';
+    await S.setDoc(ref,{name,code,status:'online',game:'',lastSeen:S.serverTimestamp(),createdAt:S.serverTimestamp()});
     await S.setDoc(S.doc(db,'codes',code),{uid:user.uid});
-    const name=(user.displayName||'Player').slice(0,30);
-    await S.setDoc(ref,{name,photo:user.photoURL||'',code,status:'online',game:'',lastSeen:S.serverTimestamp(),createdAt:S.serverTimestamp()});
     return{name,code};
   }
 
@@ -714,6 +720,12 @@ if(A&&S){
 
   window.FB={
     signIn:()=>A.signInWithPopup(auth,provider),
+    async updateName(n){
+      n=clean(n);
+      if(n.length<2)throw new Error('Use at least 2 characters.');
+      await S.updateDoc(S.doc(db,'users',uid),{name:n});
+      return n;
+    },
     signOut:async()=>{await writePresence('offline');return A.signOut(auth)},
     setPresence(st,game){cur={st,game:game||''};if(uid&&document.visibilityState!=='hidden')return writePresence(cur.st)},
     async addFriend(code){
