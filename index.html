@@ -93,6 +93,17 @@ input[type=color]{width:46px;height:38px;border:2px solid var(--line);border-rad
 .pre i u{position:absolute;right:0;top:0;bottom:0;width:50%}
 .hint{color:var(--muted);font-size:13px;line-height:1.45;margin:0}
 .calm *,.calm *::before,.calm *::after{animation:none!important;transition:none!important}
+.vm{display:flex;align-items:center;gap:10px;min-width:170px}
+.vp{width:36px;height:36px;border-radius:50%;background:var(--brass);color:var(--brass-ink);display:grid;place-items:center;flex:none}
+.m.me .vp{background:var(--brass-ink);color:var(--brass)}
+.vw{flex:1;height:4px;border-radius:2px;background:currentColor;opacity:.35}
+.vd{font-size:13px;font-variant-numeric:tabular-nums}
+.recbar{display:none;align-items:center;gap:12px;padding:10px 12px;border-top:2px solid var(--line);background:var(--deep)}
+.recbar.on{display:flex}
+.recbar .rd{width:12px;height:12px;border-radius:50%;background:var(--red);animation:blink 1s infinite;flex:none}
+.recbar .rt{flex:1;font-variant-numeric:tabular-nums;font-weight:500}
+.recbar .send{background:var(--brass);border-color:var(--brass);color:var(--brass-ink)}
+@keyframes blink{50%{opacity:.25}}
 .note{border:2px dashed var(--line);border-radius:16px;padding:14px;color:var(--muted);font-size:14px;margin-top:16px;line-height:1.45}
 .note.solid{border-style:solid;color:var(--ink);background:var(--deep)}
 nav{display:flex;padding:8px 12px 10px;gap:8px;background:var(--deep);border-top:2px solid var(--line)}
@@ -211,7 +222,8 @@ nav button.on{background:var(--brass);color:var(--brass-ink)}
 <div class="overlay" id="thread">
   <div class="bar"><button class="ib" id="thBack" aria-label="Back" data-ico="back"></button><div class="av" id="thAv"></div><div class="t" style="flex:1"><b id="thName"></b><div style="font-size:13px;color:var(--muted)" id="thSt"></div></div></div>
   <div class="msgs" id="thMsgs"></div>
-  <div class="compose"><button class="ib plus" id="thPlus" aria-label="Share a photo, file or game" data-ico="plus" data-s="24"></button><input id="thIn" placeholder="Message" autocomplete="off"><button class="ib send" id="thSend" aria-label="Send" data-ico="send"></button></div>
+  <div class="compose" id="thCompose"><button class="ib plus" id="thPlus" aria-label="Share a photo, file or game" data-ico="plus" data-s="24"></button><input id="thIn" placeholder="Message" autocomplete="off"><button class="ib" id="thMic" aria-label="Record a voice message" data-ico="mic"></button><button class="ib send" id="thSend" aria-label="Send" data-ico="send"></button></div>
+  <div class="recbar" id="recBar"><button class="ib" id="recCancel" aria-label="Cancel recording" data-ico="close"></button><i class="rd"></i><span class="rt" id="recTime">0:00</span><button class="ib send" id="recSend" aria-label="Send voice message" data-ico="send"></button></div>
 </div>
 
 <div class="overlay" id="play">
@@ -281,6 +293,9 @@ Object.assign(IC,{
  volume:'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 9a4 4 0 010 6M18.5 6.5a7.5 7.5 0 010 11"/>',
  shield:'<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/>',
  chev:'<path d="M9 5l7 7-7 7"/>',
+ play:'<path d="M8 5v14l11-7z"/>',
+ pause:'<path d="M9 5v14M15 5v14"/>',
+ bell:'<path d="M6 16v-5a6 6 0 1112 0v5l2 2H4zM10 20a2 2 0 004 0"/>',
  external:'<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/>'
 });
 const ico=(n,s=22,w=2)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
@@ -412,7 +427,7 @@ window.ffError=e=>{console.error(e);toast(errText(e))};
 const stopWatch=()=>{if(unwatchMsgs){unwatchMsgs();unwatchMsgs=null}};
 
 function lastMsg(f){const a=chats[f.id]||[];if(!a.length)return stText(f);const m=a[a.length-1];
-  const t=m.type==='image'?'Photo':m.type==='file'?m.name:m.type==='game'?'Game invite':m.text;return (m.from==='me'?'You: ':'')+t}
+  const t=m.type==='image'?'Photo':m.type==='file'?m.name:m.type==='game'?'Game invite':m.type==='voice'?'Voice message':m.text;return (m.from==='me'?'You: ':'')+t}
 function renderChats(){
   const v=$('#v-chats');
   if(!me){v.innerHTML=`<h2>Friends</h2><div class="note solid">The friends list and lobby chat need an account. Sign in with Google and your friends and chats stay with you on every device.<br><br><button class="btn" id="goSign">Sign in</button></div>`;$('#goSign').onclick=()=>setTab('me');return}
@@ -452,6 +467,11 @@ function msgHtml(m){
   const mine=m.from==='me',cls=mine?'me':'';
   if(m.type==='image')return `<div class="m ${cls} img"><img src="${m.src}" alt="Shared photo"></div>`;
   if(m.type==='file')return `<div class="m ${cls}"><b>${esc(m.name)}</b><small>${fmtSize(m.size)}</small></div>`;
+  if(m.type==='voice'){
+    const src=safeAudio(m.audio);if(!src)return '';
+    const id=m.id||('v'+Math.random().toString(36).slice(2));AUD.set(id,src);
+    return `<div class="m ${cls} vm"><button class="vp" data-vid="${esc(id)}" aria-label="Play voice message">${ico('play',18)}</button><span class="vw"></span><span class="vd">${fmtDur(m.dur)}</span></div>`;
+  }
   if(m.type==='game'){
     const g=GAMES.find(x=>x.id===m.game);if(!g)return '';
     const sub=mine?'You invited '+esc(thFriend.name):esc(thFriend.name)+' invited you';
@@ -466,7 +486,7 @@ function drawThread(){
   $('#thMsgs').innerHTML=a.length?a.map(msgHtml).join(''):`<div class="note" style="margin:auto;text-align:center">Say hi to ${esc(thFriend.name)}.</div>`;
   $('#thMsgs').scrollTop=1e9;
 }
-function pushMsg(f,m){(chats[f.id]=chats[f.id]||[]).push(m);store.set('ff_chats',chats);if(thFriend===f&&$('#thread').classList.contains('on'))drawThread()}
+function pushMsg(f,m){m.id=m.id||('l'+Date.now()+Math.random().toString(36).slice(2));(chats[f.id]=chats[f.id]||[]).push(m);store.set('ff_chats',chats);if(thFriend===f&&$('#thread').classList.contains('on'))drawThread()}
 const REPLIES=['haha yes','give me 2 minutes','I am in','lol nice','which game?','brb','send it over'];
 function friendReply(f,text){
   if(f.st==='offline'){toast(f.name+' is offline. They will see it when they are back.');return}
@@ -478,7 +498,75 @@ function sendThread(){
   pushMsg(thFriend,{from:'me',text:t});i.value='';friendReply(thFriend);
 }
 $('#thSend').onclick=sendThread;$('#thIn').onkeydown=e=>{if(e.key==='Enter')sendThread()};
-$('#thBack').onclick=()=>{$('#thread').classList.remove('on');thFriend=null;stopWatch();if(curTab==='chats')renderChats()};
+$('#thBack').onclick=()=>{cancelRec();stopVoice();$('#thread').classList.remove('on');thFriend=null;stopWatch();if(curTab==='chats')renderChats()};
+
+/* voice messages */
+const AUD=new Map();
+const safeAudio=a=>/^data:audio\/(webm|ogg|mp4)(;codecs=[a-z0-9.,]+)?;base64,[A-Za-z0-9+\/=]*$/.test(a||'')&&String(a).length<=450000?a:'';
+const fmtDur=n=>{n=Math.max(0,Math.round(n||0));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')};
+let curAudio=null,curBtn=null;
+function stopVoice(){if(curAudio){try{curAudio.pause()}catch(e){}}curAudio=null;curBtn=null}
+function playVoice(id,btn){
+  if(curAudio&&curBtn===btn){stopVoice();btn.innerHTML=ico('play',18);return}
+  const prev=curBtn;stopVoice();if(prev)prev.innerHTML=ico('play',18);
+  const src=AUD.get(id);if(!src)return;
+  const a=new Audio(src);curAudio=a;curBtn=btn;btn.innerHTML=ico('pause',18);
+  a.onended=()=>{btn.innerHTML=ico('play',18);if(curAudio===a){curAudio=null;curBtn=null}};
+  a.play().catch(()=>{toast('Could not play this message.');btn.innerHTML=ico('play',18);stopVoice()});
+}
+let rec=null;
+function pickMime(){
+  if(!window.MediaRecorder)return '';
+  return ['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'].find(t=>MediaRecorder.isTypeSupported(t))||'';
+}
+async function startRec(){
+  if(rec||!thFriend)return;
+  if(!navigator.mediaDevices||!window.MediaRecorder)return toast('Voice messages are not supported in this browser.');
+  let stream;
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:true})}
+  catch(e){return toast(e&&e.name==='NotAllowedError'?'Microphone is blocked. Allow it in Settings, then Permissions.':'No microphone was found.')}
+  const mime=pickMime();
+  let mr;
+  try{mr=new MediaRecorder(stream,mime?{mimeType:mime,audioBitsPerSecond:24000}:{audioBitsPerSecond:24000})}
+  catch(e){stream.getTracks().forEach(t=>t.stop());return toast('Could not start recording.')}
+  const r={mr,stream,chunks:[],t0:Date.now(),f:thFriend,send:false,stopping:false,timer:null};
+  rec=r;
+  mr.ondataavailable=e=>{if(e.data&&e.data.size)r.chunks.push(e.data)};
+  mr.onstop=()=>finishRec(r);
+  mr.start(250);
+  $('#thCompose').style.display='none';$('#recBar').classList.add('on');$('#recTime').textContent='0:00';
+  r.timer=setInterval(()=>{const t=(Date.now()-r.t0)/1000;$('#recTime').textContent=fmtDur(t);if(t>=60)stopRec(true)},250);
+}
+function stopRec(send){
+  if(!rec||rec.stopping)return;
+  rec.stopping=true;rec.send=send;clearInterval(rec.timer);
+  try{rec.mr.stop()}catch(e){finishRec(rec)}
+}
+function cancelRec(){if(rec)stopRec(false)}
+function finishRec(r){
+  if(r.done)return;r.done=true;
+  r.stream.getTracks().forEach(t=>t.stop());
+  if(rec===r)rec=null;
+  $('#recBar').classList.remove('on');$('#thCompose').style.display='';
+  if(!r.send)return;
+  const dur=Math.min(60,(Date.now()-r.t0)/1000);
+  if(dur<1)return toast('That was too short.');
+  const blob=new Blob(r.chunks,{type:r.mr.mimeType||'audio/webm'});
+  const rd=new FileReader();
+  rd.onload=()=>{
+    const url=String(rd.result);
+    if(!safeAudio(url))return toast(url.length>450000?'That message is too long.':'This browser records in a format that is not supported yet.');
+    sendVoice(r.f,url,Math.round(dur));
+  };
+  rd.readAsDataURL(blob);
+}
+function sendVoice(f,url,dur){
+  if(REAL){FB.sendMessage(f.pair,{type:'voice',audio:url,dur}).catch(window.ffError);return}
+  pushMsg(f,{from:'me',type:'voice',audio:url,dur});friendReply(f,'Got your voice message');
+}
+$('#thMic').onclick=startRec;
+$('#recCancel').onclick=cancelRec;
+$('#recSend').onclick=()=>stopRec(true);
 
 $('#thPlus').onclick=()=>{
   if(!thFriend)return;
@@ -510,6 +598,7 @@ $('#anyFile').onchange=e=>{
   pushMsg(thFriend,{from:'me',type:'file',name:file.name,size:file.size});friendReply(thFriend,'Got the file, thanks');
 };
 $('#thMsgs').onclick=e=>{
+  const vb=e.target.closest('[data-vid]');if(vb){playVoice(vb.dataset.vid,vb);return}
   const b=e.target.closest('[data-play]');if(!b||!thFriend)return;
   const g=GAMES.find(x=>x.id===b.dataset.play),f=thFriend;
   if(!g.live)return toast(g.name+' is coming soon.');
@@ -683,6 +772,7 @@ function pgPrivacy(){
 function pgPerm(){
   const b=$('#stBody');
   b.innerHTML=`<div class="row"><div class="sico">${ico('mic',22)}</div><div class="t"><b>Microphone</b><span class="w" id="micTxt">Checking</span></div><button class="btn sm" id="micBtn" style="display:none">Allow</button></div>
+  <div class="row"><div class="sico">${ico('bell',22)}</div><div class="t"><b>Notifications</b><span class="w" id="ntTxt">Checking</span></div><button class="btn sm" id="ntBtn" style="display:none">Turn on</button></div>
   <div class="row"><div class="sico">${ico('volume',22)}</div><div class="t"><b>Speaker</b><span class="w">No permission needed. Use your phone volume buttons.</span></div><button class="btn alt sm" id="spTest">Test</button></div>
   <p class="hint">Voice chat in Pass the Set uses the microphone. If you allow it here, your browser remembers your choice and the game should not ask again. Voice in the other games arrives later. To change it, tap the lock icon next to the web address, then Permissions.</p>`;
   const blocked='Blocked. Tap the lock icon next to the web address, then Permissions, then Microphone, then Allow.';
@@ -699,6 +789,23 @@ function pgPerm(){
     if(r==='denied'&&$('#micTxt')){$('#micTxt').textContent=blocked;$('#micBtn').style.display='none'}
   };
   $('#spTest').onclick=()=>sfx('win',true);
+  const ntInfo=()=>{
+    if(!('Notification' in window))return{t:'Not supported in this browser.',b:''};
+    if(!me)return{t:'Sign in to get message notifications.',b:''};
+    if(!(REAL&&window.FB&&FB.pushReady&&FB.pushReady()))return{t:'Not set up on the server yet.',b:''};
+    if(Notification.permission==='denied')return{t:'Blocked. Tap the lock icon next to the web address, then Permissions, then Notifications, then Allow.',b:''};
+    const on=localStorage.getItem('ff_push')==='1'&&Notification.permission==='granted';
+    return on?{t:'On. You get an alert when a friend messages you, even if the app is closed.',b:'Turn off'}:{t:'Off.',b:'Turn on'};
+  };
+  const nt=()=>{const i=ntInfo(),bt=$('#ntBtn');if(!bt)return;$('#ntTxt').textContent=i.t;bt.style.display=i.b?'':'none';bt.textContent=i.b};
+  $('#ntBtn').onclick=async()=>{
+    try{
+      if(ntInfo().b==='Turn off'){await FB.disablePush();toast('Notifications are off.')}
+      else{await FB.enablePush();toast('Notifications are on.')}
+    }catch(e){toast(errText(e))}
+    nt();
+  };
+  nt();
   upd();
 }
 
@@ -907,18 +1014,32 @@ $('#gLiveSend').onclick=()=>sendG('#gLiveIn');$('#gLiveIn').onkeydown=e=>{if(e.k
 $('#react').querySelectorAll('button').forEach(b=>b.onclick=()=>{if(G){gChatAdd('You',b.textContent);toast('Sent: '+b.textContent)}});
 $('#gMic').onclick=()=>{if(!G)return;G.mic=!G.mic;$('#gMic').classList.toggle('hot',G.mic);toast(G.mic?'Mic on (demo). Live voice arrives with the online server.':'Mic off')};
 
+window.ffPush=d=>{
+  if(thFriend&&d.pair&&thFriend.pair===d.pair&&$('#thread').classList.contains('on'))return;
+  toast((d.title||'New message')+': '+(d.body||''));sfx('msg');
+};
 window.ffReady=()=>{REAL=true;me=null;FRIENDS=[];chats={};setChip();setTab(curTab)};
 window.ffAuth=u=>{
   const fromMe=curTab==='me';
   me=u?hydrate(u):null;
-  if(!u){FRIENDS=[];if(thFriend){$('#thread').classList.remove('on');thFriend=null;stopWatch()}}
+  if(!u){FRIENDS=[];cancelRec();if(thFriend){$('#thread').classList.remove('on');thFriend=null;stopWatch()}}
   setChip();
   setTab(u&&fromMe?'chats':curTab);
 };
+let pendingChat=(()=>{const c=new URLSearchParams(location.search).get('chat');return c&&/^[A-Za-z0-9_-]{3,200}$/.test(c)?c:null})();
+function openChatByPair(pair){
+  if(!/^[A-Za-z0-9_-]{3,200}$/.test(pair||''))return;
+  const f=FRIENDS.find(x=>x.pair===pair&&x.state==='accepted');
+  if(!f){pendingChat=pair;return}
+  pendingChat=null;try{history.replaceState(null,'',location.pathname)}catch(e){}
+  setTab('chats');openThread(f.id);
+}
+if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.openChat)openChatByPair(e.data.openChat)});
 window.ffFriends=list=>{
   FRIENDS=list.map(f=>({...f,color:safeColor(f.color)||colorFor(f.name),icon:safeIcon(f.icon),pic:safePic(f.pic),bio:String(f.bio||'').slice(0,40)}));
   if(thFriend){const f=FRIENDS.find(x=>x.id===thFriend.id);if(f){thFriend=f;$('#thSt').textContent=stText(f)+(f.bio?' | '+f.bio:'');$('#thAv').outerHTML=avatarHtml(f,'',46,'thAv')}}
   if(curTab==='chats'&&me)renderChats();
+  if(pendingChat&&me)openChatByPair(pendingChat);
 };
 setChip();renderGames();
 </script>
@@ -933,6 +1054,8 @@ const firebaseConfig={
   messagingSenderId:"531837027474",
   appId:"1:531837027474:web:f8b9b0f15329cd456e124b"
 };
+const PUSH_VAPID='';   /* filled in after the notification server is set up */
+const PUSH_URL='';     /* filled in after the notification server is set up */
 const BASE='https://www.gstatic.com/firebasejs/10.14.1/';
 let A=null,S=null,initializeApp=null;
 try{
@@ -1005,8 +1128,49 @@ if(A&&S){
     },e=>window.ffError(e)));
   }
 
+  let Mx=null;
+  async function getM(){
+    if(Mx)return Mx;
+    const m=await import(BASE+'firebase-messaging.js');
+    if(!(await m.isSupported()))throw new Error('This browser does not support notifications.');
+    Mx={m,msg:m.getMessaging(app)};
+    m.onMessage(Mx.msg,pl=>{if(window.ffPush)window.ffPush(pl.data||{})});
+    return Mx;
+  }
+  async function pushToken(prompt){
+    if(!PUSH_VAPID||!PUSH_URL)throw new Error('Notifications are not set up on the server yet.');
+    if(!('Notification' in window)||!('serviceWorker' in navigator))throw new Error('This browser does not support notifications.');
+    if(Notification.permission==='default'&&prompt)await Notification.requestPermission();
+    if(Notification.permission!=='granted')throw new Error('Notifications are blocked. Tap the lock icon next to the web address, then Permissions, then Notifications, then Allow.');
+    const X=await getM();
+    const reg=await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    await navigator.serviceWorker.ready;
+    const token=await X.m.getToken(X.msg,{vapidKey:PUSH_VAPID,serviceWorkerRegistration:reg});
+    if(!token)throw new Error('Could not turn on notifications. Please try again.');
+    return token;
+  }
+  async function removeToken(){
+    try{
+      if(!uid||!PUSH_VAPID||!('Notification' in window)||Notification.permission!=='granted')return;
+      const token=await pushToken(false);
+      await S.deleteDoc(S.doc(db,'users',uid,'tokens',token));
+    }catch(e){}
+  }
+  function notify(pair,m){
+    if(!PUSH_URL||!auth.currentUser)return;
+    let to=null;
+    for(const x of fr.values()){if(x.pair===pair)to=x.other}
+    if(!to)return;
+    auth.currentUser.getIdToken().then(t=>fetch(PUSH_URL+'/notify',{
+      method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+t},
+      body:JSON.stringify({pair,to,kind:m.type,preview:'',game:m.type==='game'?String(m.game||''):''})
+    })).catch(()=>{});
+  }
+
   window.FB={
     signIn:()=>A.signInWithPopup(auth,provider),
+    signOut:async()=>{await writePresence('offline');await removeToken();return A.signOut(auth)},
     async updateProfile(p){
       const name=clean(p.name);
       if(name.length<2)throw new Error('Use at least 2 characters.');
@@ -1034,10 +1198,27 @@ if(A&&S){
     watchMessages(pair,cb){
       const q=S.query(S.collection(db,'chats',pair,'messages'),S.orderBy('createdAt','desc'),S.limit(100));
       return S.onSnapshot(q,snap=>{
-        cb(snap.docs.map(d=>{const x=d.data({serverTimestamps:'estimate'});return{id:d.id,from:x.from,type:x.type,text:x.text,game:x.game}}).reverse());
+        cb(snap.docs.map(d=>{const x=d.data({serverTimestamps:'estimate'});return{id:d.id,from:x.from,type:x.type,text:x.text,game:x.game,audio:x.audio,dur:x.dur}}).reverse());
       },e=>window.ffError(e));
     },
-    sendMessage:(pair,m)=>S.addDoc(S.collection(db,'chats',pair,'messages'),{from:uid,type:m.type,text:m.text||'',game:m.game||'',createdAt:S.serverTimestamp()})
+    async sendMessage(pair,m){
+      const d={from:uid,type:m.type,text:m.text||'',game:m.game||'',createdAt:S.serverTimestamp()};
+      if(m.type==='voice'){d.audio=m.audio;d.dur=Math.min(61,Math.round(m.dur||0))}
+      await S.addDoc(S.collection(db,'chats',pair,'messages'),d);
+      notify(pair,m);
+    },
+    pushReady:()=>!!(PUSH_VAPID&&PUSH_URL),
+    async enablePush(){
+      const token=await pushToken(true);
+      await S.setDoc(S.doc(db,'users',uid,'tokens',token),{token,createdAt:S.serverTimestamp()});
+      localStorage.setItem('ff_push','1');
+      return true;
+    },
+    async disablePush(){
+      localStorage.setItem('ff_push','0');
+      await removeToken();
+      try{const X=await getM();await X.m.deleteToken(X.msg)}catch(e){}
+    }
   };
 
   document.addEventListener('visibilitychange',()=>{if(!uid)return;if(document.visibilityState==='hidden')writePresence('offline');else writePresence(cur.st)});
@@ -1054,6 +1235,10 @@ if(A&&S){
       hb=setInterval(()=>{if(document.visibilityState!=='hidden')writePresence(cur.st)},45000);
       tick=setInterval(emit,30000);
       watchFriends();
+      if(PUSH_URL)fetch(PUSH_URL+'/',{mode:'no-cors'}).catch(()=>{});
+      if(PUSH_VAPID&&'Notification' in window&&localStorage.getItem('ff_push')==='1'&&Notification.permission==='granted'){
+        pushToken(false).then(t=>S.setDoc(S.doc(db,'users',uid,'tokens',t),{token:t,createdAt:S.serverTimestamp()})).catch(()=>{});
+      }
       window.ffAuth({uid:user.uid,...p});
     }catch(e){window.ffError(e);window.ffAuth(null)}
   });
