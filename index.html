@@ -464,20 +464,20 @@ function openThread(id){
   drawThread();
 }
 function msgHtml(m){
-  const mine=m.from==='me',cls=mine?'me':'';
-  if(m.type==='image')return `<div class="m ${cls} img"><img src="${m.src}" alt="Shared photo"></div>`;
-  if(m.type==='file')return `<div class="m ${cls}"><b>${esc(m.name)}</b><small>${fmtSize(m.size)}</small></div>`;
+  const mine=m.from==='me',cls=mine?'me':'',mid=(mine&&m.id)?` data-mid="${esc(m.id)}"`:'';
+  if(m.type==='image')return `<div class="m ${cls} img"${mid}><img src="${m.src}" alt="Shared photo"></div>`;
+  if(m.type==='file')return `<div class="m ${cls}"${mid}><b>${esc(m.name)}</b><small>${fmtSize(m.size)}</small></div>`;
   if(m.type==='voice'){
     const src=safeAudio(m.audio);if(!src)return '';
     const id=m.id||('v'+Math.random().toString(36).slice(2));AUD.set(id,src);
-    return `<div class="m ${cls} vm"><button class="vp" data-vid="${esc(id)}" aria-label="Play voice message">${ico('play',18)}</button><span class="vw"></span><span class="vd">${fmtDur(m.dur)}</span></div>`;
+    return `<div class="m ${cls} vm"${mid}><button class="vp" data-vid="${esc(id)}" aria-label="Play voice message">${ico('play',18)}</button><span class="vw"></span><span class="vd">${fmtDur(m.dur)}</span></div>`;
   }
   if(m.type==='game'){
     const g=GAMES.find(x=>x.id===m.game);if(!g)return '';
     const sub=mine?'You invited '+esc(thFriend.name):esc(thFriend.name)+' invited you';
-    return `<div class="gc ${cls}" style="${gStyle(g)}"><span class="gem">${gmark(g,56,44)}</span><b>${esc(g.name)}</b><span class="s">${sub}</span><button class="btn" data-play="${g.id}">${g.live?'Play now':'Coming soon'}</button></div>`;
+    return `<div class="gc ${cls}"${mid} style="${gStyle(g)}"><span class="gem">${gmark(g,56,44)}</span><b>${esc(g.name)}</b><span class="s">${sub}</span><button class="btn" data-play="${g.id}">${g.live?'Play now':'Coming soon'}</button></div>`;
   }
-  return `<div class="m ${cls}">${esc(m.text)}</div>`;
+  return `<div class="m ${cls}"${mid}>${esc(m.text)}</div>`;
 }
 const threadMsgs=()=>REAL?liveMsgs.map(m=>({...m,from:m.from===me.uid?'me':m.from})):(chats[thFriend.id]||[]);
 function drawThread(){
@@ -597,9 +597,27 @@ $('#anyFile').onchange=e=>{
   const file=e.target.files[0];e.target.value='';if(!file||!thFriend)return;
   pushMsg(thFriend,{from:'me',type:'file',name:file.name,size:file.size});friendReply(thFriend,'Got the file, thanks');
 };
+function askDelete(id){
+  if(!thFriend)return;
+  const m=threadMsgs().find(x=>x.id===id);
+  if(!m||m.from!=='me')return;
+  const f=thFriend;
+  openSheet(`<h3>Delete message?</h3><p>It is removed for you and ${esc(f.name)}. This cannot be undone.</p><button class="btn" id="delOk" style="background:var(--red);color:#fff;margin-bottom:10px">Delete</button><button class="btn alt" id="delNo">Cancel</button>`);
+  $('#delNo').onclick=closeSheet;
+  $('#delOk').onclick=async()=>{
+    closeSheet();stopVoice();
+    try{
+      if(REAL)await FB.deleteMessage(f.pair,id);
+      else{chats[f.id]=(chats[f.id]||[]).filter(x=>x.id!==id);store.set('ff_chats',chats);if(thFriend===f)drawThread()}
+      toast('Message deleted.');
+    }catch(e){window.ffError(e)}
+  };
+}
 $('#thMsgs').onclick=e=>{
   const vb=e.target.closest('[data-vid]');if(vb){playVoice(vb.dataset.vid,vb);return}
-  const b=e.target.closest('[data-play]');if(!b||!thFriend)return;
+  const b=e.target.closest('[data-play]');
+  if(!b){const mm=e.target.closest('[data-mid]');if(mm&&thFriend)askDelete(mm.dataset.mid);return}
+  if(!thFriend)return;
   const g=GAMES.find(x=>x.id===b.dataset.play),f=thFriend;
   if(!g.live)return toast(g.name+' is coming soon.');
   if(g.embed){$('#thread').classList.remove('on');thFriend=null;stopWatch();openEmbed(g);return}
@@ -1206,6 +1224,10 @@ if(A&&S){
       if(m.type==='voice'){d.audio=m.audio;d.dur=Math.min(61,Math.round(m.dur||0))}
       await S.addDoc(S.collection(db,'chats',pair,'messages'),d);
       notify(pair,m);
+    },
+    async deleteMessage(pair,id){
+      if(!/^[A-Za-z0-9]{10,40}$/.test(id||''))throw new Error('That message cannot be deleted.');
+      await S.deleteDoc(S.doc(db,'chats',pair,'messages',id));
     },
     pushReady:()=>!!(PUSH_VAPID&&PUSH_URL),
     async enablePush(){
